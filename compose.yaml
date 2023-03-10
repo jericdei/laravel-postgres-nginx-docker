@@ -1,0 +1,53 @@
+name: app_name
+
+services:
+  server:
+    image: nginx:stable-alpine
+    container_name: server
+    ports:
+      - "8888:80"
+    links:
+      - api
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/site.conf:/etc/nginx/conf.d/default.conf:rw
+    depends_on:
+      - api
+      - database
+    networks:
+      - app_name
+    working_dir: /var/www
+
+  database:
+    user: '1000:1000'
+    image: postgres:15.2-alpine
+    container_name: database
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./docker/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    networks:
+      - app_name
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: '${USER}'
+        uid: 1000
+    container_name: api
+    volumes:
+      - ./:/var/www
+    networks:
+      - app_name
+
+networks:
+  app_name:
+    driver: bridge
