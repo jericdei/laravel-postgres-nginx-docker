@@ -3,9 +3,8 @@ name: app_name
 services:
   server:
     image: nginx:stable-alpine
-    container_name: server
     ports:
-      - "8888:80"
+      - "8000:80"
     links:
       - api
     volumes:
@@ -21,7 +20,6 @@ services:
   database:
     user: '1000:1000'
     image: postgres:15.2-alpine
-    container_name: database
     restart: unless-stopped
     ports:
       - "5433:5432"
@@ -42,7 +40,6 @@ services:
       args:
         user: '${USER}'
         uid: 1000
-    container_name: api
     volumes:
       - ./:/var/www
     networks:
